@@ -178,6 +178,30 @@ void Stepper::setSpeed(long whatSpeed)
 }
 
 /*
+* Sets initial delay in us to prevent unexpected behaviour in the start 
+*/
+void Stepper::initializeWithDelay(unsigned long initial_delay)
+{
+  //first the motor is enabled on its first step
+  stepMotor(0);
+  
+  if(initial_delay <= this->step_delay)
+  {
+    /*if the intial delay is smaller than the step_ delay the motor 
+    * is only enabled and the current time is saved.
+    */
+    this->last_step_time = micros() ;
+  } 
+  else
+  {
+    /*if the delay is bigger than the step_delay the difference is added to 
+    * the saved time to postpone the next step. 
+    */
+    this->last_step_time = micros() + initial_delay - this->step_delay;
+  }
+}
+
+/*
  * Moves the motor steps_to_move steps.  If the number is negative,
  * the motor moves in the reverse direction.
  */
