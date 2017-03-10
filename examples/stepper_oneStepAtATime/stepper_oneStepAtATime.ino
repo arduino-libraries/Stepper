@@ -31,6 +31,10 @@ int stepCount = 0;         // number of steps the motor has taken
 void setup() {
   // initialize the serial port:
   Serial.begin(9600);
+
+  // uncomment this line if using a motor with an 8-beat pattern,
+  // like the 28BY-J-48 4-wire motor.
+  // stepper.setBeatsPerPattern(8);
 }
 
 void loop() {
