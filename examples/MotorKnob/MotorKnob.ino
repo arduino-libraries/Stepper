@@ -24,6 +24,10 @@ int previous = 0;
 void setup() {
   // set the speed of the motor to 30 RPMs
   stepper.setSpeed(30);
+
+  // uncomment this line if using a motor with an 8-beat pattern,
+  // like the 28BY-J-48 4-wire motor.
+  // stepper.setBeatsPerPattern(8);
 }
 
 void loop() {

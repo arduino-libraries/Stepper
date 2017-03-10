@@ -29,7 +29,9 @@ Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
 int stepCount = 0;  // number of steps the motor has taken
 
 void setup() {
-  // nothing to do inside the setup
+  // uncomment this line if using a motor with an 8-beat pattern,
+  // like the 28BY-J-48 4-wire motor.
+  // stepper.setBeatsPerPattern(8);
 }
 
 void loop() {

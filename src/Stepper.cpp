@@ -53,13 +53,26 @@
  *    9  1  0  1  0  1
  *   10  0  0  1  0  1
  *
- * The sequence of control signals for 4 control wires is as follows:
+ * There are two possible sequences for 4 control wires.
+ * Stepper pattern with four beats (the default) is as follows:
  *
  * Step C0 C1 C2 C3
  *    1  1  0  1  0
  *    2  0  1  1  0
  *    3  0  1  0  1
  *    4  1  0  0  1
+ *
+ * Stepper pattern with eight half steps is as follows:
+ *
+ * Step C0 C1 C2 C3
+ *    1  1  0  0  0
+ *    2  1  1  0  0
+ *    3  0  1  0  0
+ *    4  0  1  1  0
+ *    5  0  0  1  0
+ *    6  0  0  1  1
+ *    7  0  0  0  1
+ *    8  1  0  0  1
  *
  * The sequence of controls signals for 2 control wires is as follows
  * (columns C1 and C2 from above):
@@ -88,6 +101,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2)
   this->direction = 0;      // motor direction
   this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
+  this->beats_per_pattern = 2;
 
   // Arduino pins for the motor control connection:
   this->motor_pin_1 = motor_pin_1;
@@ -118,6 +132,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->direction = 0;      // motor direction
   this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
+  this->beats_per_pattern = 4;
 
   // Arduino pins for the motor control connection:
   this->motor_pin_1 = motor_pin_1;
@@ -150,6 +165,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->direction = 0;      // motor direction
   this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
+  this->beats_per_pattern = 10;
 
   // Arduino pins for the motor control connection:
   this->motor_pin_1 = motor_pin_1;
@@ -167,6 +183,21 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
 
   // pin_count is used by the stepMotor() method:
   this->pin_count = 5;
+}
+
+/*
+ * Select the number of beats in the stepper motor pattern.
+ * For four-wire motors, this can be either four or eight.
+ * For two and five wire motors, the number of beats cannot be changed.
+ */
+
+void Stepper::setBeatsPerPattern( int beats )
+{
+	if(pin_count==4 && (beats==4) || (beats==8)) {
+		beats_per_pattern = beats;
+	} else {
+		// Illegal combination
+	}
 }
 
 /*
@@ -218,10 +249,7 @@ void Stepper::step(int steps_to_move)
       // decrement the steps left:
       steps_left--;
       // step the motor to step number 0, 1, ..., {3 or 10}
-      if (this->pin_count == 5)
-        stepMotor(this->step_number % 10);
-      else
-        stepMotor(this->step_number % 4);
+      stepMotor(this->step_number % this->beats_per_pattern);
     }
   }
 }
@@ -251,7 +279,7 @@ void Stepper::stepMotor(int thisStep)
       break;
     }
   }
-  if (this->pin_count == 4) {
+  if (this->pin_count == 4 && this->beats_per_pattern==4) {
     switch (thisStep) {
       case 0:  // 1010
         digitalWrite(motor_pin_1, HIGH);
@@ -272,6 +300,59 @@ void Stepper::stepMotor(int thisStep)
         digitalWrite(motor_pin_4, HIGH);
       break;
       case 3:  //1001
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, LOW);
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, HIGH);
+      break;
+    }
+  }
+
+  if (this->pin_count == 4 && this->beats_per_pattern==8) {
+    switch (thisStep) {
+      case 0:
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, LOW);
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, LOW);
+      break;
+      case 1:
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, HIGH);
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, LOW);
+      break;
+      case 2:
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, HIGH);
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, LOW);
+      break;
+      case 3:
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, HIGH);
+        digitalWrite(motor_pin_3, HIGH);
+        digitalWrite(motor_pin_4, LOW);
+      break;
+      case 4:
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, LOW);
+        digitalWrite(motor_pin_3, HIGH);
+        digitalWrite(motor_pin_4, LOW);
+      break;
+      case 5:
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, LOW);
+        digitalWrite(motor_pin_3, HIGH);
+        digitalWrite(motor_pin_4, HIGH);;
+      break;
+      case 6:
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, LOW);
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, HIGH);
+      break;
+      case 7:
         digitalWrite(motor_pin_1, HIGH);
         digitalWrite(motor_pin_2, LOW);
         digitalWrite(motor_pin_3, LOW);
@@ -361,5 +442,5 @@ void Stepper::stepMotor(int thisStep)
 */
 int Stepper::version(void)
 {
-  return 5;
+  return 6;
 }

@@ -26,6 +26,11 @@ Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
 void setup() {
   // set the speed at 60 rpm:
   myStepper.setSpeed(60);
+
+  // uncomment this line if using a motor with an 8-beat pattern,
+  // like the 28BY-J-48 4-wire motor.
+  // stepper.setBeatsPerPattern(8);
+
   // initialize the serial port:
   Serial.begin(9600);
 }
