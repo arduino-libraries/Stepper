@@ -1,5 +1,5 @@
 /*
- * Stepper.h - Stepper library for Wiring/Arduino - Version 1.1.0
+ * Stepper.h - Stepper library for Wiring/Arduino - Version 1.2.0
  *
  * Original library        (0.1)   by Tom Igoe.
  * Two-wire modifications  (0.2)   by Sebastian Gassner
@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * Microstepping on bipolar(1.2.0) by Attila Kovács
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -72,7 +73,7 @@
  *
  * The circuits can be found at
  *
- * http://www.arduino.cc/en/Tutorial/Stepper
+ * http://www.arduino.cc/en/Reference/Stepper
  */
 
 // ensure this library description is only included once
@@ -84,8 +85,14 @@ class Stepper {
   public:
     // constructors:
     Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2);
+    Stepper(int number_of_steps, bool micro_stepping, int micro_steps,
+								int motor_pin_1, int motor_pin_2,
+								int motor_pwm_pin_1, int motor_pwm_pin_2);
     Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
                                  int motor_pin_3, int motor_pin_4);
+	Stepper(int number_of_steps, bool micro_stepping, int number_of_micro_steps,
+								int motor_pin_1, int motor_pin_2, int motor_pin_3, int motor_pin_4,
+								int motor_pwm_pin_1, int motor_pwm_pin_2);
     Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
                                  int motor_pin_3, int motor_pin_4,
                                  int motor_pin_5);
@@ -96,16 +103,24 @@ class Stepper {
     // mover method:
     void step(int number_of_steps);
 
+	// turns off the coils of the motor
+	void off();
+
     int version(void);
 
   private:
     void stepMotor(int this_step);
+	void microStepMotor(int this_step, int this_micro_step);
 
     int direction;            // Direction of rotation
     unsigned long step_delay; // delay between steps, in ms, based on speed
     int number_of_steps;      // total number of steps this motor can take
     int pin_count;            // how many pins are in use.
     int step_number;          // which step the motor is on
+	bool micro_stepping{ false };      //is microstepping enabled
+    int number_of_micro_steps;          //holds the number of microsteps
+    int micro_step_number;          // which micro step the motor is on
+    unsigned long micro_step_delay; //delay between microsteps
 
     // motor pin numbers:
     int motor_pin_1;
@@ -114,8 +129,18 @@ class Stepper {
     int motor_pin_4;
     int motor_pin_5;          // Only 5 phase motor
 
+    int motor_pwm_pin_1;
+    int motor_pwm_pin_2;
+
     unsigned long last_step_time; // time stamp in us of when the last step was taken
+
+	static int const microstepping_1_2 [4][2][2];
+
+	static int const microstepping_1_4 [4][4][2];
+
+	static int const microstepping_1_8 [4][8][2];
 };
+
 
 #endif
 
