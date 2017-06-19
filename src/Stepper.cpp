@@ -85,7 +85,6 @@
 Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2)
 {
   this->step_number = 0;    // which step the motor is on
-  this->direction = 0;      // motor direction
   this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
 
@@ -115,7 +114,6 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
                                       int motor_pin_3, int motor_pin_4)
 {
   this->step_number = 0;    // which step the motor is on
-  this->direction = 0;      // motor direction
   this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
 
@@ -147,7 +145,6 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
                                       int motor_pin_5)
 {
   this->step_number = 0;    // which step the motor is on
-  this->direction = 0;      // motor direction
   this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
 
@@ -185,10 +182,8 @@ void Stepper::step(int steps_to_move)
 {
   int steps_left = abs(steps_to_move);  // how many steps to take
 
-  // determine direction based on whether steps_to_mode is + or -:
-  if (steps_to_move > 0) { this->direction = 1; }
-  if (steps_to_move < 0) { this->direction = 0; }
-
+  // determine direction based on whether steps_to_move is + or -:
+  int direction = (steps_to_move > 0 ? 1 : 0);
 
   // decrement the number of steps, moving one step each time:
   while (steps_left > 0)
@@ -201,7 +196,7 @@ void Stepper::step(int steps_to_move)
       this->last_step_time = now;
       // increment or decrement the step number,
       // depending on direction:
-      if (this->direction == 1)
+      if (direction == 1)
       {
         this->step_number++;
         if (this->step_number == this->number_of_steps) {
