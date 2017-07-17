@@ -72,7 +72,7 @@
  *
  * The circuits can be found at
  *
- * http://www.arduino.cc/en/Reference/Stepper
+ * http://www.arduino.cc/en/Tutorial/Stepper
  */
 
 #include "Arduino.h"
