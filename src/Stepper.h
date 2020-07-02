@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * CNC shields             (1.2.0) by Jeremy Green
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -73,6 +74,9 @@
  * The circuits can be found at
  *
  * http://www.arduino.cc/en/Tutorial/Stepper
+ *
+ * Add support to use CNC shields where only 2 pins are used axis and direction
+ * 
  */
 
 // ensure this library description is only included once
@@ -83,6 +87,7 @@
 class Stepper {
   public:
     // constructors:
+	Stepper(int number_of_steps, int axis_pin, int direction_pin, int enable_pin);
     Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2);
     Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
                                  int motor_pin_3, int motor_pin_4);
@@ -95,7 +100,9 @@ class Stepper {
 
     // mover method:
     void step(int number_of_steps);
-
+	
+	void enable(bool state);
+	
     int version(void);
 
   private:
@@ -112,8 +119,8 @@ class Stepper {
     int motor_pin_2;
     int motor_pin_3;
     int motor_pin_4;
-    int motor_pin_5;          // Only 5 phase motor
-
+    int motor_pin_5;          	// Only 5 phase motor
+	bool shield;				// To support shields
     unsigned long last_step_time; // time stamp in us of when the last step was taken
 };
 
