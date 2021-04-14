@@ -34,9 +34,9 @@
  * reduced from 4 to 2 for the unipolar and bipolar motors.
  *
  * A slightly modified circuit around a Darlington transistor array or an
- * L293 H-bridge connects to only 2 microcontroler pins, inverts the signals
+ * L293 H-bridge connects to only 2 microcontroller pins, inverts the signals
  * received, and delivers the 4 (2 plus 2 inverted ones) output signals
- * required for driving a stepper motor. Similarly the Arduino motor shields
+ * required for driving a stepper motor. Similarly the Arduino motor shield's
  * 2 direction pins may be used.
  *
  * The sequence of control signals for 5 phase, 5 control wires is as follows:
@@ -61,7 +61,7 @@
  *    3  0  1  0  1
  *    4  1  0  0  1
  *
- * The sequence of controls signals for 2 control wires is as follows
+ * The sequence of control signals for 2 control wires is as follows
  * (columns C1 and C2 from above):
  *
  * Step C0 C1
@@ -114,7 +114,7 @@ class Stepper {
     int motor_pin_4;
     int motor_pin_5;          // Only 5 phase motor
 
-    unsigned long last_step_time; // time stamp in us of when the last step was taken
+    unsigned long last_step_time; // timestamp in us of when the last step was taken
 };
 
 #endif

@@ -1,4 +1,3 @@
-
 /*
  Stepper Motor Control - speed control
 
@@ -23,7 +22,7 @@ const int stepsPerRevolution = 200;  // change this to fit the number of steps p
 // for your motor
 
 
-// initialize the stepper library on pins 8 through 11:
+// initialize the Stepper library on pins 8 through 11:
 Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
 
 int stepCount = 0;  // number of steps the motor has taken
@@ -44,5 +43,3 @@ void loop() {
     myStepper.step(stepsPerRevolution / 100);
   }
 }
-
-
