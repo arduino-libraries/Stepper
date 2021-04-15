@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * Shutdown the motor      (1.2.0) by Alan Almeida
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -98,14 +99,23 @@ class Stepper {
 
     int version(void);
 
+    // if true, arduino will shutdown the motor after the each step. this
+    // prevents the motor to overheat and allow you to manually move it, but
+    // decrease motor speed
+    bool releaseMode = true;
+
   private:
     void stepMotor(int this_step);
+    void load(int position);
+    void unload(int position);
+    void BCD(int bdc, int value);
 
     int direction;            // Direction of rotation
     unsigned long step_delay; // delay between steps, in ms, based on speed
     int number_of_steps;      // total number of steps this motor can take
     int pin_count;            // how many pins are in use.
     int step_number;          // which step the motor is on
+    int position;
 
     // motor pin numbers:
     int motor_pin_1;
