@@ -13,7 +13,7 @@
 // change this to the number of steps on your motor
 #define STEPS 100
 
-// create an instance of the stepper class, specifying
+// create an instance of the Stepper class, specifying
 // the number of steps of the motor and the pins it's
 // attached to
 Stepper stepper(STEPS, 8, 9, 10, 11);
