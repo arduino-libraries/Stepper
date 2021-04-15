@@ -96,6 +96,9 @@ class Stepper {
     // mover method:
     void step(int number_of_steps);
 
+    //stop rutine
+    void stop(void);
+
     int version(void);
 
   private:
