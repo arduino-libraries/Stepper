@@ -10,12 +10,12 @@ To use this library:
 
 ## Circuits
 
-* [Unipolar steppers](https://www.arduino.cc/en/Reference/StepperUnipolarCircuit).
-* [Bipolar steppers](https://www.arduino.cc/en/Reference/StepperBipolarCircuit).
+* [Unipolar steppers](https://docs.arduino.cc/learn/electronics/stepper-motors#unipolar-stepper-circuit-and-schematic).
+* [Bipolar steppers](https://docs.arduino.cc/learn/electronics/stepper-motors#bipolar-stepper-circuit-and-schematic).
 
 ## Examples
 
-* [Motor knob](https://www.arduino.cc/en/Tutorial/LibraryExamples/MotorKnob): Control a highly accurate stepper motor using a potentiometer.
-* [Stepper one revolution](https://www.arduino.cc/en/Tutorial/LibraryExamples/StepperOneRevolution): Turn the shaft one revolution clockwise and one counterclockwise.
-* [Stepper one step at a time](https://www.arduino.cc/en/Tutorial/LibraryExamples/StepperOneStepAtATime): Turn the shaft step by step to check the proper wiring of the motor.
-* [Stepper speed control](https://www.arduino.cc/en/Tutorial/LibraryExamples/StepperSpeedControl): Control the stepping speed with a potentiometer.
+* [Motor knob](https://docs.arduino.cc/learn/electronics/stepper-motors#motorknob): Control a highly accurate stepper motor using a potentiometer.
+* [Stepper one revolution](https://docs.arduino.cc/learn/electronics/stepper-motors#stepperonerevolution): Turn the shaft one revolution clockwise and one counterclockwise.
+* [Stepper one step at a time](https://docs.arduino.cc/learn/electronics/stepper-motors#stepperonestepatatime): Turn the shaft step by step to check the proper wiring of the motor.
+* [Stepper speed control](https://docs.arduino.cc/learn/electronics/stepper-motors#stepperspeedcontrol): Control the stepping speed with a potentiometer.

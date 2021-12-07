@@ -72,7 +72,7 @@
  *
  * The circuits can be found at
  *
- * http://www.arduino.cc/en/Tutorial/Stepper
+ * https://docs.arduino.cc/learn/electronics/stepper-motors#circuit
  */
 
 // ensure this library description is only included once
