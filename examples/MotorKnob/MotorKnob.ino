@@ -4,7 +4,7 @@
  * A stepper motor follows the turns of a potentiometer
  * (or other sensor) on analog input 0.
  *
- * http://www.arduino.cc/en/Reference/Stepper
+ * https://docs.arduino.cc/learn/electronics/stepper-motors
  * This example code is in the public domain.
  */
 
@@ -13,7 +13,7 @@
 // change this to the number of steps on your motor
 #define STEPS 100
 
-// create an instance of the stepper class, specifying
+// create an instance of the Stepper class, specifying
 // the number of steps of the motor and the pins it's
 // attached to
 Stepper stepper(STEPS, 8, 9, 10, 11);
