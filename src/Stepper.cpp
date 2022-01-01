@@ -1,5 +1,5 @@
 /*
- * Stepper.cpp - Stepper library for Wiring/Arduino - Version 1.1.0
+ * Stepper.cpp - Stepper library for Wiring/Arduino - Version 1.2.0
  *
  * Original library        (0.1)   by Tom Igoe.
  * Two-wire modifications  (0.2)   by Sebastian Gassner
