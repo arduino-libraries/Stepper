@@ -1,5 +1,5 @@
 /*
- * Stepper.cpp - Stepper library for Wiring/Arduino - Version 1.1.0
+ * Stepper.cpp - Stepper library for Wiring/Arduino - Version 1.2.0
  *
  * Original library        (0.1)   by Tom Igoe.
  * Two-wire modifications  (0.2)   by Sebastian Gassner
@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * CNC shields             (1.2.0) by Jeremy Green
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -73,10 +74,47 @@
  * The circuits can be found at
  *
  * https://docs.arduino.cc/learn/electronics/stepper-motors#circuit
+ *
+ * Add support to use CNC shields where only 2 pins are used axis and direction
+ *
  */
 
 #include "Arduino.h"
 #include "Stepper.h"
+
+/*
+ * three-wire constructor
+ * Sets which wires should control the motor.
+ */
+Stepper::Stepper(int number_of_steps, int axis_pin, int direction_pin, int enable_pin)
+{
+  this->step_number = 0;    // which step the motor is on
+  this->direction = 0;      // motor direction
+  this->last_step_time = 0; // time stamp in us of the last step taken
+  this->number_of_steps = number_of_steps; // total number of steps for this motor
+
+  // Arduino pins for the motor control connection:
+  this->motor_pin_1 = axis_pin;
+  this->motor_pin_2 = direction_pin;
+  this->motor_pin_3 = enable_pin;
+  
+  // Indicate that a shield is being used
+  this->shield = shield;
+
+  // setup the pins on the microcontroller:
+  pinMode(this->motor_pin_1, OUTPUT);
+  pinMode(this->motor_pin_2, OUTPUT);
+  pinMode(this->motor_pin_3, OUTPUT);
+  
+  // When there are only 3 pins, set the others to 0:
+
+  this->motor_pin_4 = 0;
+  this->motor_pin_5 = 0;
+
+  // pin_count is used by the stepMotor() method:
+  this->pin_count = 1;
+    
+}
 
 /*
  * two-wire constructor.
@@ -220,6 +258,8 @@ void Stepper::step(int steps_to_move)
       // step the motor to step number 0, 1, ..., {3 or 10}
       if (this->pin_count == 5)
         stepMotor(this->step_number % 10);
+	  else if (this->pin_count == 1)
+        stepMotor(direction);
       else
         stepMotor(this->step_number % 4);
     }
@@ -231,6 +271,21 @@ void Stepper::step(int steps_to_move)
  */
 void Stepper::stepMotor(int thisStep)
 {
+  if (this->pin_count == 1) {
+    switch (thisStep) {
+      case 0:  // 01 backwards
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, HIGH);
+		digitalWrite(motor_pin_1, LOW);
+      break;
+      case 1:  // 00 forwards
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, LOW);
+	    digitalWrite(motor_pin_1, LOW);
+      break;
+    }
+  }
+	
   if (this->pin_count == 2) {
     switch (thisStep) {
       case 0:  // 01
@@ -251,6 +306,7 @@ void Stepper::stepMotor(int thisStep)
       break;
     }
   }
+  
   if (this->pin_count == 4) {
     switch (thisStep) {
       case 0:  // 1010
@@ -361,5 +417,18 @@ void Stepper::stepMotor(int thisStep)
 */
 int Stepper::version(void)
 {
-  return 5;
+  return 6;
 }
+
+/*
+  enable(bool) enables or disables all stepper
+ */
+ void Stepper::enable(bool state){
+	 if (state == true){
+		 digitalWrite(motor_pin_3, LOW);
+	 }
+	 else {		 
+	     digitalWrite(motor_pin_3, HIGH);
+	 }	 
+ }
+
