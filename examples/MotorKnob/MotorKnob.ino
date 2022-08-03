@@ -16,14 +16,14 @@
 // create an instance of the Stepper class, specifying
 // the number of steps of the motor and the pins it's
 // attached to
-Stepper stepper(STEPS, 8, 9, 10, 11);
+Stepper stepper(STEPS, 4, 7, 5, 8);
 
 // the previous reading from the analog input
 int previous = 0;
 
 void setup() {
-  // set the speed of the motor to 30 RPMs
-  stepper.setSpeed(30);
+  // set the speed of the motor to 15 RPMs
+  stepper.setSpeedRpm(15);
 }
 
 void loop() {
@@ -33,6 +33,9 @@ void loop() {
   // move a number of steps equal to the change in the
   // sensor reading
   stepper.step(val - previous);
+  while(stepper.move()) {
+    delay(2);
+  }
 
   // remember the previous value of the sensor
   previous = val;

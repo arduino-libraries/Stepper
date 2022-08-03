@@ -163,28 +163,59 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
 /*
  * Sets the speed in revs per minute
  */
-void Stepper::setSpeed(long whatSpeed)
+void Stepper::setSpeedRpm(const long rpm)
 {
-  this->step_delay = 60L * 1000L * 1000L / this->number_of_steps / whatSpeed;
+  this->step_delay = rpm <= 0 ? 0 :
+    60L * 1000L * 1000L / this->number_of_steps / rpm;
 }
 
 /*
- * Moves the motor steps_to_move steps.  If the number is negative,
+ * Sets the speed in steps(pulses) per second
+ */
+void Stepper::setSpeedPps(const long pps)
+{
+  this->step_delay = pps <= 0 ? 0 :
+    this->step_delay = 1000L * 1000L / pps;
+}
+
+/*
+ * Convert rpm to pps
+ */
+long Stepper::toPpsFrom(const long rpm)
+{
+  return this->number_of_steps * rpm / 60;
+}
+
+/*
+ * Set the motor steps_to_move steps. If the number is negative,
  * the motor moves in the reverse direction.
  */
 void Stepper::step(int steps_to_move)
 {
-  int steps_left = abs(steps_to_move);  // how many steps to take
+  this->steps_left = abs(steps_to_move);  // how many steps to take
 
   // determine direction based on whether steps_to_mode is + or -:
-  if (steps_to_move > 0) { this->direction = 1; }
-  if (steps_to_move < 0) { this->direction = 0; }
+  if (steps_to_move > 0)
+  {
+    this->direction = true;
+  }
+  else
+  {
+    this->direction = false;
+  }
+}
 
+/*
+ * Moves the motor with steps set by step().
+ * Return the left steps to be moved.
+ */
+int Stepper::move(void)
+{
+  const unsigned long now = micros();
 
   // decrement the number of steps, moving one step each time:
-  while (steps_left > 0)
+  if (this->steps_left > 0 && this->step_delay > 0)
   {
-    unsigned long now = micros();
     // move only if the appropriate delay has passed:
     if (now - this->last_step_time >= this->step_delay)
     {
@@ -192,7 +223,7 @@ void Stepper::step(int steps_to_move)
       this->last_step_time = now;
       // increment or decrement the step number,
       // depending on direction:
-      if (this->direction == 1)
+      if (this->direction)
       {
         this->step_number++;
         if (this->step_number == this->number_of_steps) {
@@ -207,7 +238,7 @@ void Stepper::step(int steps_to_move)
         this->step_number--;
       }
       // decrement the steps left:
-      steps_left--;
+      this->steps_left--;
       // step the motor to step number 0, 1, ..., {3 or 10}
       if (this->pin_count == 5)
         stepMotor(this->step_number % 10);
@@ -215,6 +246,8 @@ void Stepper::step(int steps_to_move)
         stepMotor(this->step_number % 4);
     }
   }
+
+  return this->steps_left;
 }
 
 /*

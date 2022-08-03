@@ -13,7 +13,9 @@ Stepper	KEYWORD1	Stepper
 #######################################
 
 step	KEYWORD2
-setSpeed	KEYWORD2
+setSpeedRpm	KEYWORD2
+setSpeedPps	KEYWORD2
+toPpsFrom	KEYWORD2
 version	KEYWORD2
 
 ######################################
