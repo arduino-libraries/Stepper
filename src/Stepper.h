@@ -35,7 +35,7 @@
  * reduced from 4 to 2 for the unipolar and bipolar motors.
  *
  * A slightly modified circuit around a Darlington transistor array or an
- * L293 H-bridge connects to only 2 microcontroler pins, inverts the signals
+ * L293 H-bridge connects to only 2 microcontroller pins, inverts the signals
  * received, and delivers the 4 (2 plus 2 inverted ones) output signals
  * required for driving a stepper motor. Similarly the Arduino motor shields
  * 2 direction pins may be used.
