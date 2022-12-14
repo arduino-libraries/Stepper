@@ -40,7 +40,7 @@
  * required for driving a stepper motor. Similarly the Arduino motor shields
  * 2 direction pins may be used.
  *
- * The sequence of control signals for 3 phase, 3 control wires is as follows:
+ * The sequence of (SRM) control signals for 3 phase, 3 control wires is as follows:
  *
  * Step C0 C1 C2  (change)
  *    0  0  0  1   C1 Low
