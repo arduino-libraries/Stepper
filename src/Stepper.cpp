@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * Three phase three wire          by Joe Brendler
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,7 +40,7 @@
  * required for driving a stepper motor. Similarly the Arduino motor shields
  * 2 direction pins may be used.
  *
- * The sequence of control signals for 3 phase, 3 control wires is as follows:
+ * The sequence of (SRM) control signals for 3 phase, 3 control wires is as follows:
  *
  * Step C0 C1 C2  (change)
  *    0  0  0  1   C1 Low
@@ -119,6 +120,8 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2)
 /*
  *   constructor for three-pin version
  *   Sets which wires should control the motor.
+ *   Note: can drive with 3 x half H-Bridge chip like L293D, to control e.g. HDD motor
+ *   (tie common line to ground, or invert control lines if driving with common HIGH)
  */
 Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
                  int motor_pin_3)
@@ -234,10 +237,11 @@ void Stepper::step(int steps_to_move)
     this->direction = 0;
   }
 
-  // decrement the number of steps, moving one step each time:
+  // decrement the number of steps, moving one step each time, unless INTERRUPTED
+  //  (flag set by interrupt() method, enabling external interruption of otherwise-blocking loop):
   while (steps_left > 0 && !INTERRUPTED)
   {
-    yield();
+    yield(); // guard against WDT-timeout crashes on some controllers, e.g. heltec's wifi kit 32
     unsigned long now = micros();
     // move only if the appropriate delay has passed:
     if (now - this->last_step_time >= this->step_delay)
