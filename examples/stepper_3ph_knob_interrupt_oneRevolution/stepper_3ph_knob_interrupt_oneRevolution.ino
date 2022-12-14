@@ -35,7 +35,7 @@ Output should look like this:
  Modified 14 Dec 2022 by Joe Brendler
  */
 
-#include <Arduino.h>
+// #include <Arduino.h>
 #include <Stepper.h>
 
 #define pot A0
