@@ -35,11 +35,11 @@ Output should look like this:
  Modified 14 Dec 2022 by Joe Brendler
  */
 
-// #include <Arduino.h>
+#include <Arduino.h>
 #include <Stepper.h>
 
-#define pot A0
-#define pushbutton 37
+const int pot = 0;        // A0
+const int pushbutton = 2; // D2, int0
 
 const int stepsPerRevolution = 200; // change this to fit the number of steps per revolution for your motor
 long speed = 50;                    // analog input reading (in rpm)
@@ -58,7 +58,8 @@ Stepper myStepper(stepsPerRevolution, 17, 18, 19);
 /*------------------------------------------------------------------------------
    handle_button_interrupt() - set flag and call stepper interrupt method
   ------------------------------------------------------------------------------*/
-void IRAM_ATTR handle_button_interrupt()
+// void IRAM_ATTR handle_button_interrupt()
+void handle_button_interrupt()
 {
   buttonPress.PRESSED = true;
   myStepper.interrupt(); // method sets a flag
@@ -74,7 +75,7 @@ void setup()
 
   // Configure function pushbutton interrupt pin
   Serial.print("config pushbutton");
-  pinMode(buttonPress.PIN, INPUT_PULLDOWN);
+  pinMode(buttonPress.PIN, INPUT);
   Serial.println(" ==> Done");
   Serial.print("Attach interrupt... ");
   attachInterrupt(buttonPress.PIN, handle_button_interrupt, FALLING);
@@ -92,7 +93,8 @@ void loop()
   // read speed from 12-bit ADC input (map 1-100; stepper doesn't like speed=0)
   speed = (long)(map(analogRead(pot), 0, 4095, 1, 100));
   myStepper.setSpeed(speed);
-  Serial.printf("clockwise, speed: %d ", speed);
+  Serial.print("clockwise, speed: ");
+  Serial.print(speed);
   // step one revolution in one direction:
   myStepper.step(stepsPerRevolution);
   if (buttonPress.PRESSED)
@@ -109,7 +111,8 @@ void loop()
   // read speed from 12-bit ADC input (map 1-100; stepper doesn't like speed=0)
   speed = (long)(map(analogRead(pot), 0, 4095, 1, 100));
   myStepper.setSpeed(speed);
-  Serial.printf("counterclockwise, speed: %d ", speed);
+  Serial.print("clockwise, speed: ");
+  Serial.print(speed);
   // step one revolution in the other direction:
   myStepper.step(-stepsPerRevolution);
   if (buttonPress.PRESSED)
