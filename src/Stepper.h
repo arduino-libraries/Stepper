@@ -96,10 +96,22 @@ class Stepper {
     // mover method:
     void step(int number_of_steps);
 
-    int version(void);
-
+    int version(void);   
+    
+    void end_idle(void);
+    
+    void idle_check(void);
+    
+    void setupIdleMode(int freq,int hold_strength,unsigned long delay_idle);
+    
   private:
     void stepMotor(int this_step);
+
+    int toogle_cnt;
+    unsigned long  idle_counter;
+    bool enabled_idle;
+    int hold_strength;
+    unsigned long delay_idle;
 
     int direction;            // Direction of rotation
     unsigned long step_delay; // delay between steps, in us, based on speed

@@ -111,6 +111,8 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2)
  *   constructor for four-pin version
  *   Sets which wires should control the motor.
  */
+
+const int ledChannel = 0;
 Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
                                       int motor_pin_3, int motor_pin_4)
 {
@@ -136,6 +138,10 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
 
   // pin_count is used by the stepMotor() method:
   this->pin_count = 4;
+  
+  this->idle_counter=0;
+     
+  
 }
 
 /*
@@ -169,6 +175,44 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->pin_count = 5;
 }
 
+void Stepper::setupIdleMode(int freq,int hold_strength,unsigned long delay_idle) {
+  const int resolution = 8;
+  ledcSetup(ledChannel, freq, resolution);
+  this->hold_strength = hold_strength;
+  this->delay_idle= delay_idle;
+}
+
+
+
+void Stepper::end_idle(void){
+  if (this->enabled_idle){
+      ledcDetachPin(this->motor_pin_1);
+  ledcDetachPin(this->motor_pin_3); 
+  stepMotor(this->step_number % 4);
+  }
+  this->enabled_idle=false;
+  this->idle_counter=0;
+}
+
+
+void Stepper::idle_check(void){
+  if (this->idle_counter > this->delay_idle){
+    if (!this->enabled_idle){
+      this->enabled_idle = true;      
+      ledcAttachPin(this->motor_pin_1, ledChannel);
+      ledcAttachPin(this->motor_pin_3, ledChannel);
+      ledcWrite(ledChannel, this->hold_strength);  
+      digitalWrite(this->motor_pin_2, LOW);
+      digitalWrite(this->motor_pin_4, LOW);
+    }    
+  }else{
+    this->idle_counter++;
+  }
+ 
+}
+
+
+
 /*
  * Sets the speed in revs per minute
  */
@@ -183,6 +227,8 @@ void Stepper::setSpeed(long whatSpeed)
  */
 void Stepper::step(int steps_to_move)
 {
+
+  this->end_idle();
   int steps_left = abs(steps_to_move);  // how many steps to take
 
   // determine direction based on whether steps_to_mode is + or -:
@@ -222,8 +268,9 @@ void Stepper::step(int steps_to_move)
         stepMotor(this->step_number % 10);
       else
         stepMotor(this->step_number % 4);
-    } else {
+    /* } else {
       yield();
+    */
     }
   }
 }
