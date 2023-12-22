@@ -34,9 +34,9 @@
  * reduced from 4 to 2 for the unipolar and bipolar motors.
  *
  * A slightly modified circuit around a Darlington transistor array or an
- * L293 H-bridge connects to only 2 microcontroller pins, inverts the signals
+ * L293 H-bridge connects to only 2 microcontroler pins, inverts the signals
  * received, and delivers the 4 (2 plus 2 inverted ones) output signals
- * required for driving a stepper motor. Similarly the Arduino motor shield's
+ * required for driving a stepper motor. Similarly the Arduino motor shields
  * 2 direction pins may be used.
  *
  * The sequence of control signals for 5 phase, 5 control wires is as follows:
@@ -61,7 +61,7 @@
  *    3  0  1  0  1
  *    4  1  0  0  1
  *
- * The sequence of control signals for 2 control wires is as follows
+ * The sequence of controls signals for 2 control wires is as follows
  * (columns C1 and C2 from above):
  *
  * Step C0 C1
@@ -72,7 +72,7 @@
  *
  * The circuits can be found at
  *
- * https://docs.arduino.cc/learn/electronics/stepper-motors#circuit
+ * http://www.arduino.cc/en/Tutorial/Stepper
  */
 
 #include "Arduino.h"
@@ -86,7 +86,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2)
 {
   this->step_number = 0;    // which step the motor is on
   this->direction = 0;      // motor direction
-  this->last_step_time = 0; // timestamp in us of the last step taken
+  this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
 
   // Arduino pins for the motor control connection:
@@ -116,7 +116,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
 {
   this->step_number = 0;    // which step the motor is on
   this->direction = 0;      // motor direction
-  this->last_step_time = 0; // timestamp in us of the last step taken
+  this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
 
   // Arduino pins for the motor control connection:
@@ -148,7 +148,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
 {
   this->step_number = 0;    // which step the motor is on
   this->direction = 0;      // motor direction
-  this->last_step_time = 0; // timestamp in us of the last step taken
+  this->last_step_time = 0; // time stamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
 
   // Arduino pins for the motor control connection:
@@ -168,6 +168,41 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   // pin_count is used by the stepMotor() method:
   this->pin_count = 5;
 }
+
+/*for 8 pins at once so that two motors at opposite directions can run parallely at opposite direction 
+  to create effects like front wheel drive or back wheel drive, since arduino has a single channel*/
+Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
+                                int motor_pin_3, int motor_pin_4,
+                                int motor_pin_5, int motor_pin_6,
+                                int motor_pin_7, int motor_pin_8)
+{
+  this->step_number = 0;    // which step the motor is on
+  this->direction = 0;      // motor direction
+  this->last_step_time = 0; // timestamp in us of the last step taken
+  this->number_of_steps = number_of_steps; // total number of steps for this motor
+   // Arduino pins for the motor control connection:
+  this->motor_pin_1 = motor_pin_1;
+  this->motor_pin_2 = motor_pin_2;
+  this->motor_pin_3 = motor_pin_3;
+  this->motor_pin_4 = motor_pin_4;
+  this->motor_pin_5 = motor_pin_5;
+  this->motor_pin_6 = motor_pin_6;
+  this->motor_pin_7 = motor_pin_7;
+  this->motor_pin_8 = motor_pin_8;
+
+    // setup the pins on the microcontroller:
+  pinMode(this->motor_pin_1, OUTPUT);
+  pinMode(this->motor_pin_2, OUTPUT);
+  pinMode(this->motor_pin_3, OUTPUT);
+  pinMode(this->motor_pin_4, OUTPUT);
+  pinMode(this->motor_pin_5, OUTPUT);
+  pinMode(this->motor_pin_6, OUTPUT);
+  pinMode(this->motor_pin_7, OUTPUT);
+  pinMode(this->motor_pin_8, OUTPUT);
+
+    // pin_count is used by the stepMotor() method:
+  this->pin_count = 8;
+}  
 
 /*
  * Sets the speed in revs per minute
@@ -222,8 +257,6 @@ void Stepper::step(int steps_to_move)
         stepMotor(this->step_number % 10);
       else
         stepMotor(this->step_number % 4);
-    } else {
-      yield();
     }
   }
 }
@@ -281,6 +314,51 @@ void Stepper::stepMotor(int thisStep)
       break;
     }
   }
+
+  if (this->pin_count == 8) {
+    switch (thisStep) {
+      case 0:  // 1010
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, LOW);
+        digitalWrite(motor_pin_3, HIGH);
+        digitalWrite(motor_pin_4, LOW);
+        digitalWrite(motor_pin_5, LOW);
+        digitalWrite(motor_pin_6, HIGH);
+        digitalWrite(motor_pin_7, HIGH);
+        digitalWrite(motor_pin_8, LOW);
+      break;
+      case 1:  // 0110
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, HIGH);
+        digitalWrite(motor_pin_3, HIGH);
+        digitalWrite(motor_pin_4, LOW);
+        digitalWrite(motor_pin_5, HIGH);
+        digitalWrite(motor_pin_6, LOW);
+        digitalWrite(motor_pin_7, HIGH);
+        digitalWrite(motor_pin_8, LOW);
+      break;
+      case 2:  //0101
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, HIGH);
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, HIGH);
+        digitalWrite(motor_pin_5, HIGH);
+        digitalWrite(motor_pin_6, LOW); 
+        digitalWrite(motor_pin_7, LOW);
+        digitalWrite(motor_pin_8, HIGH);
+      break;
+      case 3:  //1001
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, LOW); 
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, HIGH);
+        digitalWrite(motor_pin_5, LOW);
+        digitalWrite(motor_pin_6, HIGH);
+        digitalWrite(motor_pin_7, LOW);
+        digitalWrite(motor_pin_8, HIGH);
+      break;
+    }
+  } 
 
   if (this->pin_count == 5) {
     switch (thisStep) {
