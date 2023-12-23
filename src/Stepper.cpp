@@ -169,7 +169,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->pin_count = 5;
 }
 
-/*for 8 pins at once so that two motors at opposite directions can run parallely at opposite direction 
+/*for 8 pins at once so that two motors at opposite directions can run parallelly at opposite direction 
   to create effects like front wheel drive or back wheel drive, since arduino has a single channel*/
 Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
                                 int motor_pin_3, int motor_pin_4,
