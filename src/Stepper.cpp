@@ -178,6 +178,14 @@ void Stepper::setSpeed(long whatSpeed)
 }
 
 /*
+ * Sets the speed in revs per minute
+ */
+void Stepper::stop(void)
+{
+  this->set_stop = true;
+}
+
+/*
  * Moves the motor steps_to_move steps.  If the number is negative,
  * the motor moves in the reverse direction.
  */
@@ -191,7 +199,8 @@ void Stepper::step(int steps_to_move)
 
 
   // decrement the number of steps, moving one step each time:
-  while (steps_left > 0)
+  this->set_stop = false;
+  while (steps_left > 0 && set_stop == false)
   {
     unsigned long now = micros();
     // move only if the appropriate delay has passed:
