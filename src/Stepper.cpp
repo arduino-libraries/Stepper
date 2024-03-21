@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * Shutdown the motor      (1.2.0) by Alan Almeida
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -233,130 +234,11 @@ void Stepper::step(int steps_to_move)
  */
 void Stepper::stepMotor(int thisStep)
 {
-  if (this->pin_count == 2) {
-    switch (thisStep) {
-      case 0:  // 01
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-      break;
-      case 1:  // 11
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, HIGH);
-      break;
-      case 2:  // 10
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-      break;
-      case 3:  // 00
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, LOW);
-      break;
-    }
-  }
-  if (this->pin_count == 4) {
-    switch (thisStep) {
-      case 0:  // 1010
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-      break;
-      case 1:  // 0110
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-      break;
-      case 2:  //0101
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-      break;
-      case 3:  //1001
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-      break;
-    }
-  }
-
-  if (this->pin_count == 5) {
-    switch (thisStep) {
-      case 0:  // 01101
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, HIGH);
-        break;
-      case 1:  // 01001
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, HIGH);
-        break;
-      case 2:  // 01011
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, HIGH);
-        break;
-      case 3:  // 01010
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, LOW);
-        break;
-      case 4:  // 11010
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, LOW);
-        break;
-      case 5:  // 10010
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, LOW);
-        break;
-      case 6:  // 10110
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, LOW);
-        break;
-      case 7:  // 10100
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, LOW);
-        break;
-      case 8:  // 10101
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, HIGH);
-        break;
-      case 9:  // 00101
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, HIGH);
-        break;
-    }
-  }
+  if(this->releaseMode) load(this->position);
+  unload(thisStep); // do the move
+  this->position = thisStep;
 }
+
 
 /*
   version() returns the version of the library:
@@ -365,3 +247,446 @@ int Stepper::version(void)
 {
   return 5;
 }
+
+void Stepper::load(int position)
+{
+  if(this->pin_count == 2)
+  {
+    switch (position) {
+      case 0:  // 01
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b01, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      case 1:  // 11
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b11, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      case 2:  // 10
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b10, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      case 3:  // 00
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b00, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      default:
+        break;
+    }
+  }
+  else if(this->pin_count == 4)
+  {
+    switch(position)
+    {
+      case 0:  // 1010
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b1010, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      case 1:  // 0110
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b0110, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      case 2:  //0101
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b0101, i);
+          if(this->releaseMode == false) break;
+        }  
+      break;
+      case 3:  //1001
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b1001, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+    }
+  }
+  else if(this->pin_count == 5)
+  {
+    switch(position)
+    {
+      case 0:  // 01101
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b01101, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 1:  // 01001
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b01001, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 2:  //01011
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b01011,i);
+          if(this->releaseMode == false) break;
+        }  
+        break;
+      case 3:  //01010
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b01010, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 4: //11010
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b11010, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 5: //10010
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b10010, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 6: //10110
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b10110, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 7: //10100
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b10100, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 8: //10101
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b10101, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 9: //00101
+        for(int i = 0; i < 255; i+=2)
+        {
+          BCD(0b00101, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+    }
+  }
+}
+
+void Stepper::unload(int thisStep)
+{
+  if(this->pin_count == 2)
+  {
+    switch (thisStep) {
+      case 0:  // 01
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b01, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      case 1:  // 11
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b11, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      case 2:  // 10
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b10, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      case 3:  // 00
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b00, i);
+          if(this->releaseMode == false) break;
+        }
+      break;
+      default:
+        break;
+    }
+  }
+  else /**/if(this->pin_count == 4)
+  {
+    //Serial.println("Pin: 4");
+    switch(thisStep)
+    {
+      case 0:  // 1010
+        //Serial.println("Case 0");
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b1010, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 1:  // 0110
+        //Serial.println("Case 1");
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b0110, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 2:  //0101
+        //Serial.println("Case 2");
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b0101, i);
+          if(this->releaseMode == false) break;
+        }  
+        break;
+      case 3:  //1001
+        //Serial.println("Case 3");
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b1001, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+    }
+  }
+  else /**/if(this->pin_count == 5)
+  {
+    switch(thisStep)
+    {
+      case 0:  // 01101
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b01101, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 1:  // 01001
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b01001, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 2:  //01011
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b01011,i);
+          if(this->releaseMode == false) break;
+        }  
+        break;
+      case 3:  //01010
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b01010, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 4: //11010
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b11010, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 5: //10010
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b10010, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 6: //10110
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b10110, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 7: //10100
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b10100, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 8: //10101
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b10101, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+      case 9: //00101
+        for(int i = 255; i >= 0; i-=2)
+        {
+          BCD(0b00101, i);
+          if(this->releaseMode == false) break;
+        }
+        break;
+    }
+  }/**/
+}
+
+void Stepper::BCD(int bcd, int value)
+{
+  switch(this->pin_count)
+  {
+    case 2: //pin_count
+      switch(bcd)
+      {
+        case 0b01:
+          digitalWrite(motor_pin_1, LOW);
+          analogWrite(motor_pin_2, value);
+          break;
+        case 0b11:
+          analogWrite(motor_pin_1, value);
+          analogWrite(motor_pin_2, value);
+          break;
+        case 0b10:
+          analogWrite(motor_pin_1, value);
+          digitalWrite(motor_pin_2, LOW);
+          break;
+        case 0b00:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, LOW);
+          break;
+        default:
+          break;
+      }
+      break;
+    case 4: //pin_count
+      switch (bcd)
+      {
+        case 0b1010:
+          analogWrite(motor_pin_1, value);
+          digitalWrite(motor_pin_2, LOW);
+          analogWrite(motor_pin_3, value);
+          digitalWrite(motor_pin_4, LOW);
+          break;
+        case 0b0110:
+          digitalWrite(motor_pin_1, LOW);
+          analogWrite(motor_pin_2, value);
+          analogWrite(motor_pin_3, value);
+          digitalWrite(motor_pin_4, LOW);
+          break;
+        case 0b0101:
+          digitalWrite(motor_pin_1, LOW);
+          analogWrite(motor_pin_2, value);
+          digitalWrite(motor_pin_3, LOW);
+          analogWrite(motor_pin_4, value);
+          break;
+        case 0b1001:
+          analogWrite(motor_pin_1, value);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, LOW);
+          analogWrite(motor_pin_4, value);
+          break;
+        default:
+          break;
+      }
+      break;
+    case 5: //pin_count
+      switch (bcd)
+      {
+        case 0b01101:
+          digitalWrite(motor_pin_1, LOW);
+          analogWrite(motor_pin_2, value);
+          analogWrite(motor_pin_3, value);
+          digitalWrite(motor_pin_4, LOW);
+          analogWrite(motor_pin_5, value);
+          break;
+        case 0b01001:
+          digitalWrite(motor_pin_1, LOW);
+          analogWrite(motor_pin_2, value);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, LOW);
+          analogWrite(motor_pin_5, value);
+          break;
+        case 0b01011:
+          digitalWrite(motor_pin_1, LOW);
+          analogWrite(motor_pin_2, value);
+          digitalWrite(motor_pin_3, LOW);
+          analogWrite(motor_pin_4, value);
+          analogWrite(motor_pin_5, value);
+          break;
+        case 0b01010:
+          digitalWrite(motor_pin_1, LOW);
+          analogWrite(motor_pin_2, value);
+          digitalWrite(motor_pin_3, LOW);
+          analogWrite(motor_pin_4, value);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 0b11010:
+          analogWrite(motor_pin_1, value);
+          analogWrite(motor_pin_2, value);
+          digitalWrite(motor_pin_3, LOW);
+          analogWrite(motor_pin_4, value);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 0b10010:
+          analogWrite(motor_pin_1, value);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, LOW);
+          analogWrite(motor_pin_4, value);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 0b10110:
+          analogWrite(motor_pin_1, value);
+          digitalWrite(motor_pin_2, LOW);
+          analogWrite(motor_pin_3, value);
+          analogWrite(motor_pin_4, value);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 0b10100:
+          analogWrite(motor_pin_1, value);
+          digitalWrite(motor_pin_2, LOW);
+          analogWrite(motor_pin_3, value);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 0b10101:
+          analogWrite(motor_pin_1, value);
+          digitalWrite(motor_pin_2, LOW);
+          analogWrite(motor_pin_3, value);
+          digitalWrite(motor_pin_4, LOW);
+          analogWrite(motor_pin_5, value);
+          break;
+        case 0b00101:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, LOW);
+          analogWrite(motor_pin_3, value);
+          digitalWrite(motor_pin_4, LOW);
+          analogWrite(motor_pin_5, value);
+          break;
+        default:
+          break;
+      }
+      break;
+      default:
+      break;
+  } // end switch(pin_count)
+}/**/
