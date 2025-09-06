@@ -88,6 +88,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2)
   this->direction = 0;      // motor direction
   this->last_step_time = 0; // timestamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
+  this->idle = false;       // Power down all coils after done stepping
 
   // Arduino pins for the motor control connection:
   this->motor_pin_1 = motor_pin_1;
@@ -118,6 +119,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->direction = 0;      // motor direction
   this->last_step_time = 0; // timestamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
+  this->idle = false;       // Power down all coils after done stepping
 
   // Arduino pins for the motor control connection:
   this->motor_pin_1 = motor_pin_1;
@@ -150,6 +152,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->direction = 0;      // motor direction
   this->last_step_time = 0; // timestamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
+  this->idle = false;       // Power down all coils after done stepping
 
   // Arduino pins for the motor control connection:
   this->motor_pin_1 = motor_pin_1;
@@ -225,6 +228,21 @@ void Stepper::step(int steps_to_move)
     } else {
       yield();
     }
+  }
+  // If ideling is enabled then power down all coils
+  if (this->idle == true)
+  {
+    digitalWrite(motor_pin_1, LOW);
+    digitalWrite(motor_pin_2, LOW);
+    if (this->pin_count == 4)
+    {
+      digitalWrite(motor_pin_1, LOW);
+      digitalWrite(motor_pin_2, LOW);
+      digitalWrite(motor_pin_3, LOW);
+      digitalWrite(motor_pin_4, LOW);
+    }
+    if (this->pin_count == 5)
+      digitalWrite(motor_pin_5, LOW);
   }
 }
 
@@ -356,6 +374,15 @@ void Stepper::stepMotor(int thisStep)
         break;
     }
   }
+}
+
+/*
+ * Allow powering down all coils after stepping, 
+ * to reduce heat, power and allow manuall rotation.
+ */
+void Stepper::idelAfterStep(bool idle)
+{
+  this->idle = idle;
 }
 
 /*
