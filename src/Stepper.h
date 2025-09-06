@@ -96,7 +96,7 @@ class Stepper {
     // mover method:
     void step(int number_of_steps);
     
-    // Power down all coils after stepping, to reduce heat, power and allow manuall rotation.
+    // Power down all coils after stepping, to reduce heat, power and allow manual rotation.
     void idelAfterStep(bool idle);
 
     int version(void);
