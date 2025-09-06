@@ -378,7 +378,7 @@ void Stepper::stepMotor(int thisStep)
 
 /*
  * Allow powering down all coils after stepping, 
- * to reduce heat, power and allow manual rotation.
+ * to reduce heat, power and allow manuall rotation.
  */
 void Stepper::idelAfterStep(bool idle)
 {
