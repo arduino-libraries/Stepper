@@ -1,5 +1,5 @@
 /*
- * Stepper.cpp - Stepper library for Wiring/Arduino - Version 1.1.0
+ * Stepper.cpp - Stepper library for Wiring/Arduino - Version 1.1.1
  *
  * Original library        (0.1)   by Tom Igoe.
  * Two-wire modifications  (0.2)   by Sebastian Gassner
@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * add idle method         (1.1.1) by Darren Clark
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -359,9 +360,32 @@ void Stepper::stepMotor(int thisStep)
 }
 
 /*
+  idle() power down the pins (may lose count):
+*/
+void Stepper::idle(void) {
+  if (this->pin_count == 2) {
+    digitalWrite(motor_pin_1, LOW);
+    digitalWrite(motor_pin_2, LOW);
+  }
+  if (this->pin_count == 4) {
+    digitalWrite(motor_pin_1, LOW);
+    digitalWrite(motor_pin_2, LOW);
+    digitalWrite(motor_pin_3, LOW);
+    digitalWrite(motor_pin_4, LOW);
+  }
+  if (this->pin_count == 5) {
+    digitalWrite(motor_pin_1, LOW);
+    digitalWrite(motor_pin_2, LOW);
+    digitalWrite(motor_pin_3, LOW);
+    digitalWrite(motor_pin_4, LOW);
+    digitalWrite(motor_pin_5, LOW);
+  }
+}
+
+/*
   version() returns the version of the library:
 */
 int Stepper::version(void)
 {
-  return 5;
+  return 6;
 }
