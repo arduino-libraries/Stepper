@@ -10,7 +10,7 @@ image:https://github.com/{repository-owner}/{repository-name}/actions/workflows/
 This library allows you to control unipolar or bipolar stepper motors. To use it you will need a stepper motor, and the appropriate hardware to control it.
 
 For more information about this library please visit us at
-http://www.arduino.cc/en/Reference/{repository-name}
+http://www.arduino.cc/en/Reference/{repository-name} 
 
 == License ==
 

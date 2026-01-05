@@ -89,6 +89,10 @@ class Stepper {
     Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
                                  int motor_pin_3, int motor_pin_4,
                                  int motor_pin_5);
+    Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
+                                 int motor_pin_3, int motor_pin_4,
+                                 int motor_pin_5, int motor_pin_6,
+                                 int motor_pin_7, int motor_pin_8);
 
     // speed setter method:
     void setSpeed(long whatSpeed);
@@ -113,9 +117,11 @@ class Stepper {
     int motor_pin_3;
     int motor_pin_4;
     int motor_pin_5;          // Only 5 phase motor
+    int motor_pin_6;
+    int motor_pin_7;
+    int motor_pin_8;          // Defined till 8 pins because 4-pin x2   
 
     unsigned long last_step_time; // timestamp in us of when the last step was taken
 };
 
 #endif
-
