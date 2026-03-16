@@ -95,6 +95,9 @@ class Stepper {
 
     // mover method:
     void step(int number_of_steps);
+    
+    // Power down all coils after stepping, to reduce heat, power and allow manual rotation.
+    void idelAfterStep(bool idle);
 
     int version(void);
 
@@ -106,6 +109,7 @@ class Stepper {
     int number_of_steps;      // total number of steps this motor can take
     int pin_count;            // how many pins are in use.
     int step_number;          // which step the motor is on
+    bool idle;                // Power down all coils after done stepping
 
     // motor pin numbers:
     int motor_pin_1;

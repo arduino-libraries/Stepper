@@ -15,6 +15,7 @@ Stepper	KEYWORD1	Stepper
 step	KEYWORD2
 setSpeed	KEYWORD2
 version	KEYWORD2
+idelAfterStep	KEYWORD2
 
 ######################################
 # Instances (KEYWORD2)
