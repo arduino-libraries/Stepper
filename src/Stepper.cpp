@@ -169,6 +169,41 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->pin_count = 5;
 }
 
+/*for 8 pins at once so that two motors at opposite directions can run parallelly at opposite direction 
+  to create effects like front wheel drive or back wheel drive, since arduino has a single channel*/
+Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
+                                int motor_pin_3, int motor_pin_4,
+                                int motor_pin_5, int motor_pin_6,
+                                int motor_pin_7, int motor_pin_8)
+{
+  this->step_number = 0;    // which step the motor is on
+  this->direction = 0;      // motor direction
+  this->last_step_time = 0; // timestamp in us of the last step taken
+  this->number_of_steps = number_of_steps; // total number of steps for this motor
+   // Arduino pins for the motor control connection:
+  this->motor_pin_1 = motor_pin_1;
+  this->motor_pin_2 = motor_pin_2;
+  this->motor_pin_3 = motor_pin_3;
+  this->motor_pin_4 = motor_pin_4;
+  this->motor_pin_5 = motor_pin_5;
+  this->motor_pin_6 = motor_pin_6;
+  this->motor_pin_7 = motor_pin_7;
+  this->motor_pin_8 = motor_pin_8;
+
+    // setup the pins on the microcontroller:
+  pinMode(this->motor_pin_1, OUTPUT);
+  pinMode(this->motor_pin_2, OUTPUT);
+  pinMode(this->motor_pin_3, OUTPUT);
+  pinMode(this->motor_pin_4, OUTPUT);
+  pinMode(this->motor_pin_5, OUTPUT);
+  pinMode(this->motor_pin_6, OUTPUT);
+  pinMode(this->motor_pin_7, OUTPUT);
+  pinMode(this->motor_pin_8, OUTPUT);
+
+    // pin_count is used by the stepMotor() method:
+  this->pin_count = 8;
+}  
+
 /*
  * Sets the speed in revs per minute
  */
@@ -281,6 +316,51 @@ void Stepper::stepMotor(int thisStep)
       break;
     }
   }
+
+  if (this->pin_count == 8) {
+    switch (thisStep) {
+      case 0:  // 1010
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, LOW);
+        digitalWrite(motor_pin_3, HIGH);
+        digitalWrite(motor_pin_4, LOW);
+        digitalWrite(motor_pin_5, LOW);
+        digitalWrite(motor_pin_6, HIGH);
+        digitalWrite(motor_pin_7, HIGH);
+        digitalWrite(motor_pin_8, LOW);
+      break;
+      case 1:  // 0110
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, HIGH);
+        digitalWrite(motor_pin_3, HIGH);
+        digitalWrite(motor_pin_4, LOW);
+        digitalWrite(motor_pin_5, HIGH);
+        digitalWrite(motor_pin_6, LOW);
+        digitalWrite(motor_pin_7, HIGH);
+        digitalWrite(motor_pin_8, LOW);
+      break;
+      case 2:  //0101
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, HIGH);
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, HIGH);
+        digitalWrite(motor_pin_5, HIGH);
+        digitalWrite(motor_pin_6, LOW); 
+        digitalWrite(motor_pin_7, LOW);
+        digitalWrite(motor_pin_8, HIGH);
+      break;
+      case 3:  //1001
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, LOW); 
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, HIGH);
+        digitalWrite(motor_pin_5, LOW);
+        digitalWrite(motor_pin_6, HIGH);
+        digitalWrite(motor_pin_7, LOW);
+        digitalWrite(motor_pin_8, HIGH);
+      break;
+    }
+  } 
 
   if (this->pin_count == 5) {
     switch (thisStep) {
