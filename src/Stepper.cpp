@@ -88,6 +88,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2)
   this->direction = 0;      // motor direction
   this->last_step_time = 0; // timestamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
+  this->excitationMode = 2; // default to two-phase (both coils energized)
 
   // Arduino pins for the motor control connection:
   this->motor_pin_1 = motor_pin_1;
@@ -118,6 +119,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->direction = 0;      // motor direction
   this->last_step_time = 0; // timestamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
+  this->excitationMode = 2; // default to two-phase (both coils energized)
 
   // Arduino pins for the motor control connection:
   this->motor_pin_1 = motor_pin_1;
@@ -150,6 +152,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->direction = 0;      // motor direction
   this->last_step_time = 0; // timestamp in us of the last step taken
   this->number_of_steps = number_of_steps; // total number of steps for this motor
+  this->excitationMode = 2; // default to two-phase (both coils energized)
 
   // Arduino pins for the motor control connection:
   this->motor_pin_1 = motor_pin_1;
@@ -176,6 +179,14 @@ void Stepper::setSpeed(long whatSpeed)
 {
   this->step_delay = 60L * 1000L * 1000L / this->number_of_steps / whatSpeed;
 }
+
+// Set excitation mode: 1 = single-phase (one coil at a time), 2 = two-phase (default)
+void Stepper::setExcitationMode(int mode)
+{
+  if (mode == 1) this->excitationMode = 1;
+  else this->excitationMode = 2;
+}
+
 
 /*
  * Moves the motor steps_to_move steps.  If the number is negative,
@@ -233,128 +244,226 @@ void Stepper::step(int steps_to_move)
  */
 void Stepper::stepMotor(int thisStep)
 {
+  int stepIndex = thisStep;
+
+  // 2-pin motors: support single-phase (one coil on) and two-phase (both coils)
   if (this->pin_count == 2) {
-    switch (thisStep) {
-      case 0:  // 01
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-      break;
-      case 1:  // 11
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, HIGH);
-      break;
-      case 2:  // 10
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-      break;
-      case 3:  // 00
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, LOW);
-      break;
+    if (this->excitationMode == 1) {
+      // single-phase: alternate energizing one coil at a time
+      switch (stepIndex % 2) {
+        case 0:
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+          break;
+        case 1:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+          break;
+      }
+    } else {
+      // two-phase (original behavior)
+      switch (thisStep) {
+        case 0:  // 01
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+        break;
+        case 1:  // 11
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, HIGH);
+        break;
+        case 2:  // 10
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+        break;
+        case 3:  // 00
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, LOW);
+        break;
+      }
     }
-  }
-  if (this->pin_count == 4) {
-    switch (thisStep) {
-      case 0:  // 1010
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-      break;
-      case 1:  // 0110
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-      break;
-      case 2:  //0101
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-      break;
-      case 3:  //1001
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-      break;
-    }
+    return;
   }
 
-  if (this->pin_count == 5) {
-    switch (thisStep) {
-      case 0:  // 01101
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, HIGH);
+  // 4-pin motors
+  if (this->pin_count == 4) {
+    if (this->excitationMode == 1) {
+      // single-phase: only one coil energized at a time
+      switch (stepIndex % 4) {
+        case 0:
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, LOW);
+          break;
+        case 1:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, LOW);
+          break;
+        case 2:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, HIGH);
+          digitalWrite(motor_pin_4, LOW);
+          break;
+        case 3:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, HIGH);
+          break;
+      }
+    } else {
+      // two-phase (original behavior)
+      switch (thisStep) {
+        case 0:  // 1010
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, HIGH);
+          digitalWrite(motor_pin_4, LOW);
         break;
-      case 1:  // 01001
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, HIGH);
+        case 1:  // 0110
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+          digitalWrite(motor_pin_3, HIGH);
+          digitalWrite(motor_pin_4, LOW);
         break;
-      case 2:  // 01011
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, HIGH);
+        case 2:  //0101
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, HIGH);
         break;
-      case 3:  // 01010
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, LOW);
+        case 3:  //1001
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, HIGH);
         break;
-      case 4:  // 11010
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, HIGH);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, LOW);
-        break;
-      case 5:  // 10010
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, LOW);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, LOW);
-        break;
-      case 6:  // 10110
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, HIGH);
-        digitalWrite(motor_pin_5, LOW);
-        break;
-      case 7:  // 10100
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, LOW);
-        break;
-      case 8:  // 10101
-        digitalWrite(motor_pin_1, HIGH);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, HIGH);
-        break;
-      case 9:  // 00101
-        digitalWrite(motor_pin_1, LOW);
-        digitalWrite(motor_pin_2, LOW);
-        digitalWrite(motor_pin_3, HIGH);
-        digitalWrite(motor_pin_4, LOW);
-        digitalWrite(motor_pin_5, HIGH);
-        break;
+      }
     }
+    return;
+  }
+
+  // 5-pin motors
+  if (this->pin_count == 5) {
+    if (this->excitationMode == 1) {
+      // single-phase: one coil energized; use a 5-step sequence
+      stepIndex = thisStep % 5;
+      switch (stepIndex) {
+        case 0:
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 1:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 2:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, HIGH);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 3:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, HIGH);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 4:
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, HIGH);
+          break;
+      }
+    } else {
+      // two-phase (original behavior)
+      switch (thisStep) {
+        case 0:  // 01101
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+          digitalWrite(motor_pin_3, HIGH);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, HIGH);
+          break;
+        case 1:  // 01001
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, HIGH);
+          break;
+        case 2:  // 01011
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, HIGH);
+          digitalWrite(motor_pin_5, HIGH);
+          break;
+        case 3:  // 01010
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, HIGH);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, HIGH);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 4:  // 11010
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, HIGH);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, HIGH);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 5:  // 10010
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, LOW);
+          digitalWrite(motor_pin_4, HIGH);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 6:  // 10110
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, HIGH);
+          digitalWrite(motor_pin_4, HIGH);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 7:  // 10100
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, HIGH);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, LOW);
+          break;
+        case 8:  // 10101
+          digitalWrite(motor_pin_1, HIGH);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, HIGH);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, HIGH);
+          break;
+        case 9:  // 00101
+          digitalWrite(motor_pin_1, LOW);
+          digitalWrite(motor_pin_2, LOW);
+          digitalWrite(motor_pin_3, HIGH);
+          digitalWrite(motor_pin_4, LOW);
+          digitalWrite(motor_pin_5, HIGH);
+          break;
+      }
+    }
+    return;
   }
 }
 

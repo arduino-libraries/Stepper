@@ -93,6 +93,9 @@ class Stepper {
     // speed setter method:
     void setSpeed(long whatSpeed);
 
+    // excitation mode: 1 = single-phase (one coil at a time), 2 = two-phase (default, two coils energized)
+    void setExcitationMode(int mode);
+
     // mover method:
     void step(int number_of_steps);
 
@@ -106,6 +109,7 @@ class Stepper {
     int number_of_steps;      // total number of steps this motor can take
     int pin_count;            // how many pins are in use.
     int step_number;          // which step the motor is on
+    int excitationMode;       // excitation mode: 1 = single-phase, 2 = two-phase (default)
 
     // motor pin numbers:
     int motor_pin_1;
