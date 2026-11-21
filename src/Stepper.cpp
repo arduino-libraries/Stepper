@@ -189,11 +189,11 @@ void Stepper::step(int steps_to_move)
   // default directional for 0 is 1 but it is inconsequential
   if (steps_to_move >= 0)
   {
-     this->direction = 1;
+    this->direction = 1;
   }
   else // steps_to_move < 0
   {
-      this->direction = 0;
+    this->direction = 0;
   }
 
 
