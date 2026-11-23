@@ -8,6 +8,7 @@
  * High-speed stepping mod         by Eugene Kozlenko
  * Timer rollover fix              by Eugene Kozlenko
  * Five phase five wire    (1.1.0) by Ryan Orendorff
+ * add idle method         (1.1.1) by Darren Clark
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -95,6 +96,9 @@ class Stepper {
 
     // mover method:
     void step(int number_of_steps);
+  
+    // idle method:
+    void idle(void);
 
     int version(void);
 
